@@ -1,0 +1,27 @@
+# General
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Backend
+backend/__pycache__/
+backend/*.pyc
+backend/venv/
+backend/.env
+backend/model/ # If we want to exclude large model files, but for now we might keep it if <100MB
+*.pth
+
+# Artifacts
+.gemini/
