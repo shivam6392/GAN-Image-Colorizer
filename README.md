@@ -3,8 +3,6 @@
 > **Relive the colors of the past.**  
 > Transform historical black & white photography into vibrant reality using state-of-the-art deep learning.
 
-![Project Preview](https://github.com/shivam6392/GAN-Image-Colorizer/assets/placeholder.png)
-
 ## ✨ Features
 
 -   **🪄 AI-Powered Restoration**: Uses the **SIGGRAPH 2017** (Zhang et al.) Interactive Deep Colorization model for high-fidelity results.
