@@ -3,8 +3,7 @@
 > **Samsung Innovation Challenge (SIC) - Group Project**  
 > Transform historical black & white photography into vibrant reality using state-of-the-art Deep Learning models (CNN/GAN).
 
-
-##  Team Members
+## 👥 Team Members
 
 | Name | Student ID |
 |:--- |:--- |
@@ -16,15 +15,15 @@
 
 ---
 
-##  Features
+## ✨ Features
 
--   ** Deep Learning Restoration**: Utilizes the **SIGGRAPH 2017** (Zhang et al.) Convolutional Neural Network (CNN) for high-fidelity results.
--   ** Ethereal Cyberpunk UI**: Modern glassmorphic interface built with Next.js & Tailwind.
--   ** Real-time Inference**: Optimized forward pass on CPU.
--   ** Interactive Comparison**: Sliding tool to view Original vs. Generated Output.
--   ** Smart Resizing**: Handles all aspect ratios without cropping.
+-   **🧠 Deep Learning Restoration**: Utilizes the **SIGGRAPH 2017** (Zhang et al.) Convolutional Neural Network (CNN) for high-fidelity results.
+-   **🌌 Ethereal Cyberpunk UI**: Modern glassmorphic interface built with Next.js & Tailwind.
+-   **⚡ Real-time Inference**: Optimized forward pass on CPU.
+-   **🔍 Interactive Comparison**: Sliding tool to view Original vs. Generated Output.
+-   **🖼️ Smart Resizing**: Handles all aspect ratios without cropping.
 
-##  Tech Stack
+## 🛠️ Tech Stack
 
 -   **Frontend**: Next.js 14, Tailwind CSS, Lucide React
 -   **Backend**: FastAPI, PyTorch (Deep Learning Framework), Scikit-Image
@@ -33,15 +32,15 @@
 
 ---
 
-##  Getting Started
+## 🚀 Getting Started
 
-### 1️ Clone the Repository
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/shivam6392/GAN-Image-Colorizer.git
 cd GAN-Image-Colorizer
 ```
 
-### 2️ Backend Setup
+### 2️⃣ Backend Setup
 ```bash
 cd backend
 python -m venv venv
@@ -52,7 +51,7 @@ python main.py
 ```
 *Server runs on `http://localhost:8000`*
 
-### 3️ Frontend Setup
+### 3️⃣ Frontend Setup
 ```bash
 cd frontend
 npm install
@@ -62,7 +61,7 @@ npm run dev
 
 ---
 
-##  Deployment
+## ☁️ Deployment
 
 ### Backend (Render)
 1.  Deploy `backend` folder as Web Service.
@@ -76,5 +75,5 @@ npm run dev
 ---
 
 <p align="center">
-  <b>Samsung Innovation Campus</b> • Deep Learning Group Project
+  <b>Samsung Innovation Challenge</b> • Deep Learning Group Project
 </p>
