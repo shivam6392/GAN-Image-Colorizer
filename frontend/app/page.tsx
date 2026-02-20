@@ -100,15 +100,15 @@ export default function Home() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
               <Wand2 className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-wide">CHROMA<span className="text-purple-400">LAB</span></span>
+            <span className="font-bold text-lg tracking-wide">Developed by <span className="text-purple-400">Us</span></span>
           </div>
-          <div className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">v2.0 • SIGGRAPH17</div>
+          <div className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-1 rounded">SIC • Group Project</div>
         </div>
 
         {/* Hero Section */}
         <div className="text-center mb-16 space-y-6 max-w-3xl">
           <div className="inline-block px-4 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-medium tracking-wider mb-4 neon-border">
-            AI-POWERED RESTORATION
+            DEEP LEARNING RESTORATION (GAN)
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
             Relive the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-glow">Colors</span> of the Past
