@@ -76,5 +76,5 @@ npm run dev
 ---
 
 <p align="center">
-  <b>Samsung Innovation Challenge</b> • Deep Learning Group Project
+  <b>Samsung Innovation Campus</b> • Deep Learning Group Project
 </p>
