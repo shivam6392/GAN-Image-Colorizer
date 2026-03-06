@@ -21,16 +21,16 @@ from download_model import download_model
 
 # Resolve paths relative to this file's directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(BASE_DIR, "checkpoints", "siggraph17-df00044c.pth")
+model_path = os.path.join(BASE_DIR, "checkpoints", "siggraph17.onnx")
 
 # Download model if not present
 download_model()
 
 if not os.path.exists(model_path):
-    print("No trained model found. Using random weights.")
+    print("No trained ONNX model found. Using dummy fallback.")
     model_path = None
 else:
-    print(f"Loading model from {model_path}")
+    print(f"Loading ONNX model from {model_path}")
 
 colorizer = Colorizer(model_path=model_path)
 
@@ -44,7 +44,6 @@ async def colorize_image(file: UploadFile = File(...)):
     image_bytes = await file.read()
     
     # Run inference
-    # Note: Since the model is untrained, output will be noise/random colors
     colorized_img = colorizer.predict(image_bytes)
     
     # Convert back to bytes

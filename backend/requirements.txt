@@ -1,9 +1,8 @@
---extra-index-url https://download.pytorch.org/whl/cpu
 fastapi
 uvicorn
 python-multipart
-torch
-torchvision
+onnxruntime
 numpy
 scikit-image
 requests
+Pillow

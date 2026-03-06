@@ -1,26 +1,15 @@
 import os
 import requests
 
-url = "https://colorizers.s3.us-east-2.amazonaws.com/siggraph17-df00044c.pth"
-save_path = os.path.join(os.path.dirname(__file__), "checkpoints", "siggraph17-df00044c.pth")
+# We will ship the static .onnx graph directly in the Git Repository and bypass HTTP downloads.
+save_path = os.path.join(os.path.dirname(__file__), "checkpoints", "siggraph17.onnx")
 
 def download_model():
     if os.path.exists(save_path):
-        print(f"Model already exists at {save_path}")
+        print(f"ONNX Model already exists locally at {save_path}")
         return
-
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    print(f"Downloading model from {url}...")
-    
-    response = requests.get(url, stream=True)
-    if response.status_code == 200:
-        with open(save_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-        print("Download complete!")
     else:
-        print(f"Failed to download model. Status code: {response.status_code}")
+        print(f"Error: ONNX Model missing at {save_path}")
 
 if __name__ == "__main__":
     download_model()

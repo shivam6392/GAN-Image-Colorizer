@@ -1,81 +1,72 @@
-import torch
-from PIL import Image
-import numpy as np
-from torchvision import transforms
-from skimage.color import rgb2lab, lab2rgb
-from .siggraph17 import SIGGRAPHGenerator
 import os
 import io
+import numpy as np
+from PIL import Image
+from skimage.color import rgb2lab, lab2rgb
+import onnxruntime as ort
 
 class Colorizer:
-    def __init__(self, model_path="checkpoints/siggraph17-df00044c.pth", map_location='cpu'):
-        # Aggressive memory optimizations for Render Free Tier (512MB RAM)
-        torch.set_num_threads(1)
-        torch.set_num_interop_threads(1)
-        os.environ["OMP_NUM_THREADS"] = "1"
-        os.environ["MKL_NUM_THREADS"] = "1"
-        
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.net_G = SIGGRAPHGenerator().to(self.device)
-        
+    def __init__(self, model_path="checkpoints/siggraph17.onnx"):
         if model_path and os.path.exists(model_path):
-            self.net_G.load_state_dict(torch.load(model_path, map_location=map_location))
-            print(f"Loaded Siggraph17 model from {model_path}")
+            print(f"Loading ONNX model from {model_path}")
+            # Ensure ONNX Runtime runs sequentially on 1 thread to avoid Render Memory Spikes
+            sess_options = ort.SessionOptions()
+            sess_options.intra_op_num_threads = 1
+            sess_options.inter_op_num_threads = 1
+            self.session = ort.InferenceSession(model_path, sess_options, providers=['CPUExecutionProvider'])
+            self.input_name = self.session.get_inputs()[0].name
         else:
-            print(f"Warning: Model path {model_path} not found. Running with random weights.")
-        
-        # Optimize memory usage for Render Free Tier (512MB RAM)
-        torch.set_grad_enabled(False)
-        self.net_G.eval()
+            print(f"Warning: ONNX model {model_path} not found. Cannot colorize.")
+            self.session = None
 
     def preprocess(self, img_bytes):
         img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         original_size = img.size
         
         # 1. Processing for Model Input (256x256)
-        transform_model = transforms.Compose([
-            transforms.Resize((256, 256), Image.BICUBIC),
-        ])
-        img_256 = transform_model(img)
+        # Replacing torchvision transforms.Resize with PIL Resize
+        img_256 = img.resize((256, 256), Image.BICUBIC)
         img_256_arr = np.array(img_256)
-        img_256_lab = rgb2lab(img_256_arr).astype("float32")
-        img_256_lab_t = transforms.ToTensor()(img_256_lab)
         
-        # Siggraph17 expects L channel in range [0, 100]
-        # ToTensor scales [0, 255] to [0, 1]. But rgb2lab output is [0, 100] for L?
-        # No, skimage.color.rgb2lab returns L in [0, 100], a, b in [-128, 127] approx.
-        # transforms.ToTensor() converts HWC [0, 255] uint8 to CHW [0.0, 1.0] float.
-        # BUT if input is float array, ToTensor doesn't scale if it's already float?
-        # Wait, if I pass float array to ToTensor, it might not scale unless it's uint8.
-        # Let's verify. standard ToTensor scales only if valid image types.
-        # If I convert numpy float32 to tensor:
-        L_256 = torch.from_numpy(img_256_lab[:, :, [0]].transpose(2, 0, 1)) # 1, H, W
+        # rgb2lab returns L in [0, 100] exactly as the model expects
+        img_256_lab = rgb2lab(img_256_arr).astype(np.float32)
+        
+        # Extract L channel and transpose to [C, H, W] for the model
+        L_256 = img_256_lab[:, :, 0] # H, W
+        L_256 = L_256[np.newaxis, np.newaxis, :, :] # 1, 1, 256, 256
         
         # 2. Processing for High-Res Output (Original L Channel)
         img_arr = np.array(img)
-        img_lab = rgb2lab(img_arr).astype("float32")
+        img_lab = rgb2lab(img_arr).astype(np.float32)
         L_original = img_lab[..., 0] # Keep as HxW numpy array
         
-        return L_256.unsqueeze(0).to(self.device), L_original, original_size
+        return L_256, L_original, original_size
 
     def predict(self, img_bytes):
+        if self.session is None:
+            # Fallback if model missing, return original dummy image
+            return Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
         L_256, L_original, original_size = self.preprocess(img_bytes)
         
-        with torch.no_grad():
-            # Model expects L in range [0, 100]
-            ab_256 = self.net_G(L_256)
-            
-        # Post-process ab channel
-        ab_256 = ab_256.cpu() # 1, 2, 256, 256
+        # Run inference using ONNX Runtime
+        ort_inputs = {self.input_name: L_256}
+        ort_outs = self.session.run(None, ort_inputs)
         
-        # Resize predicted ab to original size
-        ab_upscaled = torch.nn.functional.interpolate(
-            ab_256, size=(original_size[1], original_size[0]), mode='bilinear', align_corners=False
-        )
+        ab_256 = ort_outs[0] # output shape: [1, 2, 256, 256]
         
-        # Denormalize ab - Model already does unnormalization!
-        ab_upscaled = ab_upscaled.squeeze(0).numpy().transpose(1, 2, 0) # HxWx2
-
+        # Resize predicted ab back to original size manually without PyTorch Functional
+        # Transpose back to HWC for PIL to resize
+        ab_256_hwc = ab_256[0].transpose(1, 2, 0) # 256, 256, 2
+        
+        # Separately resize `a` and `b` channels
+        a_channel = Image.fromarray(ab_256_hwc[:, :, 0]).resize((original_size[0], original_size[1]), Image.BILINEAR)
+        b_channel = Image.fromarray(ab_256_hwc[:, :, 1]).resize((original_size[0], original_size[1]), Image.BILINEAR)
+        
+        a_upscaled = np.array(a_channel)
+        b_upscaled = np.array(b_channel)
+        
+        ab_upscaled = np.stack([a_upscaled, b_upscaled], axis=-1) # H, W, 2
         
         # Combine L_original (H, W) + ab_upscaled (H, W, 2)
         L_original_exp = L_original[..., np.newaxis] # H, W, 1
@@ -84,9 +75,6 @@ class Colorizer:
         # Convert to RGB
         rgb_image = lab2rgb(Lab_final)
         
-        # Convert to PIL
+        # Convert to PIL and return
         img_final = Image.fromarray((rgb_image * 255).astype(np.uint8))
         return img_final
-
-    # lab_to_rgb is no longer needed in this new flow but keeping it won't hurt, 
-    # though we replaced the logic inside predict.
