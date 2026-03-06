@@ -1,7 +1,7 @@
 import os
 import requests
 
-url = "https://colorizers.onrender.com/colorizers/siggraph17-df00044c.pth"
+url = "https://colorizers.s3.us-east-2.amazonaws.com/siggraph17-df00044c.pth"
 save_path = os.path.join(os.path.dirname(__file__), "checkpoints", "siggraph17-df00044c.pth")
 
 def download_model():
