@@ -9,6 +9,12 @@ import io
 
 class Colorizer:
     def __init__(self, model_path="checkpoints/siggraph17-df00044c.pth", map_location='cpu'):
+        # Aggressive memory optimizations for Render Free Tier (512MB RAM)
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["MKL_NUM_THREADS"] = "1"
+        
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.net_G = SIGGRAPHGenerator().to(self.device)
         
