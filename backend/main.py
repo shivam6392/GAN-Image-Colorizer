@@ -17,7 +17,15 @@ app.add_middleware(
 
 # Initialize Colorizer (Model weights would be loaded here if we had them)
 import os
-model_path = "checkpoints/siggraph17-df00044c.pth"
+from download_model import download_model
+
+# Resolve paths relative to this file's directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "checkpoints", "siggraph17-df00044c.pth")
+
+# Download model if not present
+download_model()
+
 if not os.path.exists(model_path):
     print("No trained model found. Using random weights.")
     model_path = None
