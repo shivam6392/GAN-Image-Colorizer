@@ -3,7 +3,6 @@
 > **Samsung Innovation Challenge (SIC) - Group Project**  
 > Transform historical black & white photography into vibrant reality using state-of-the-art Deep Learning models (CNN/GAN).
 
-![Project Preview](https://github.com/shivam6392/GAN-Image-Colorizer/assets/placeholder.png)
 
 ## 👥 Team Members
 
