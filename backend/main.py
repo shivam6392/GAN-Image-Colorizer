@@ -56,4 +56,5 @@ async def colorize_image(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Render Free Tier has strict 512MB RAM limit. Limit workers to 1 to prevent OOM
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, workers=1)

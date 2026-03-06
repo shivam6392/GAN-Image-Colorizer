@@ -18,6 +18,8 @@ class Colorizer:
         else:
             print(f"Warning: Model path {model_path} not found. Running with random weights.")
         
+        # Optimize memory usage for Render Free Tier (512MB RAM)
+        torch.set_grad_enabled(False)
         self.net_G.eval()
 
     def preprocess(self, img_bytes):
