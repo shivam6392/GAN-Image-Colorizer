@@ -20,8 +20,11 @@ backend/__pycache__/
 backend/*.pyc
 backend/venv/
 backend/.env
-backend/model/ # If we want to exclude large model files, but for now we might keep it if <100MB
+backend/model/
+backend/checkpoints/
 *.pth
+*.onnx
+*.onnx.data
 
 # Artifacts
 .gemini/

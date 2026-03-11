@@ -1,16 +1,25 @@
 import torch
-from model.inference import Colorizer
 import os
+from model.siggraph17 import SIGGRAPHGenerator
 
 def export_to_onnx():
-    print("Loading model...")
-    # Load PyTorch model
-    colorizer = Colorizer()
-    model = colorizer.net_G
+    print("Loading PyTorch model...")
+    # Initialize the model architecture
+    model = SIGGRAPHGenerator()
+    
+    # Load the weights
+    weights_path = os.path.join(os.path.dirname(__file__), "checkpoints", "siggraph17-df00044c.pth")
+    if not os.path.exists(weights_path):
+        print(f"Error: Weights not found at {weights_path}")
+        return
+
+    # Load state dict
+    state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
+    model.load_state_dict(state_dict)
     model.eval()
 
-    # Create dummy input: L channel is [1, 1, 256, 256]
-    dummy_input = torch.randn(1, 1, 256, 256)
+    # Create dummy input: L channel is [B, 1, 256, 256]
+    dummy_input = torch.randn(1, 1, 256, 256) 
     
     # Export path
     export_path = os.path.join(os.path.dirname(__file__), "checkpoints", "siggraph17.onnx")
@@ -18,7 +27,7 @@ def export_to_onnx():
     print(f"Exporting to {export_path}...")
     torch.onnx.export(
         model, 
-        dummy_input, 
+        dummy_input, # input_A
         export_path, 
         export_params=True,
         opset_version=11, 

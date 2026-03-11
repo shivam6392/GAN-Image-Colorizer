@@ -23,14 +23,14 @@ from download_model import download_model
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(BASE_DIR, "checkpoints", "siggraph17.onnx")
 
-# Download model if not present
-download_model()
+# Download model if not present or too small
+success = download_model()
 
-if not os.path.exists(model_path):
-    print("No trained ONNX model found. Using dummy fallback.")
-    model_path = None
+if os.path.exists(model_path) and os.path.getsize(model_path) > 1024*1024:
+    print(f"Loading single-file ONNX model from {model_path} ({os.path.getsize(model_path)/1024/1024:.1f}MB)")
 else:
-    print(f"Loading ONNX model from {model_path}")
+    print(f"WARNING: Model file missing or invalid at {model_path}. Colorization will not work.")
+    model_path = None
 
 colorizer = Colorizer(model_path=model_path)
 
