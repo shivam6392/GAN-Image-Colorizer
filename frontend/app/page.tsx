@@ -33,7 +33,8 @@ export default function Home() {
       formData.append("file", selectedFile);
 
       // Send to backend
-      const response = await fetch("http://localhost:8000/colorize", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/colorize`, {
         method: "POST",
         body: formData,
       });
