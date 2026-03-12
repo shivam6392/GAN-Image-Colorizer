@@ -9,13 +9,13 @@ app = FastAPI(title="Image Colorizer API")
 # Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize Colorizer (Model weights would be loaded here if we had them)
+# Initialize Colorizer
 import os
 from download_model import download_model
 
@@ -27,16 +27,17 @@ model_path = os.path.join(BASE_DIR, "checkpoints", "siggraph17.onnx")
 success = download_model()
 
 if os.path.exists(model_path) and os.path.getsize(model_path) > 1024*1024:
-    print(f"Loading single-file ONNX model from {model_path} ({os.path.getsize(model_path)/1024/1024:.1f}MB)")
+    print(f"Loading model from {model_path} ({os.path.getsize(model_path)/1024/1024:.1f}MB)")
 else:
-    print(f"WARNING: Model file missing or invalid at {model_path}. Colorization will not work.")
+    print(f"WARNING: Model file missing or invalid at {model_path}.")
     model_path = None
 
 colorizer = Colorizer(model_path=model_path)
 
 @app.get("/")
+@app.get("/health")
 def read_root():
-    return {"message": "Image Colorizer API is running"}
+    return {"status": "healthy", "model_loaded": model_path is not None}
 
 @app.post("/colorize")
 async def colorize_image(file: UploadFile = File(...)):
@@ -55,5 +56,7 @@ async def colorize_image(file: UploadFile = File(...)):
 
 if __name__ == "__main__":
     import uvicorn
+    # Use PORT environment variable for Render
+    port = int(os.environ.get("PORT", 8000))
     # Render Free Tier has strict 512MB RAM limit. Limit workers to 1 to prevent OOM
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, workers=1)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, workers=1)

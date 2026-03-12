@@ -33,14 +33,19 @@ export default function Home() {
       formData.append("file", selectedFile);
 
       // Send to backend
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = publicApiUrl || "http://localhost:8000";
+      console.log(`Using API URL: ${apiUrl}`);
+
       const response = await fetch(`${apiUrl}/colorize`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to process image");
+        const errorText = await response.text().catch(() => "Unknown error");
+        console.error("Backend error:", errorText);
+        throw new Error(`Failed to process image: ${response.status} ${response.statusText}`);
       }
 
       // Get result as blob
