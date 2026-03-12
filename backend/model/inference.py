@@ -2,8 +2,66 @@ import os
 import io
 import numpy as np
 from PIL import Image
-from skimage.color import rgb2lab, lab2rgb
 import onnxruntime as ort
+
+def rgb2lab(rgb):
+    # rgb input is [0, 255] float
+    rgb = rgb / 255.0
+    # sRGB -> XYZ
+    mask = rgb > 0.04045
+    rgb[mask] = ((rgb[mask] + 0.055) / 1.055) ** 2.4
+    rgb[~mask] = rgb[~mask] / 12.92
+    
+    xyz_matrix = np.array([
+        [0.4124564, 0.3575761, 0.1804375],
+        [0.2126729, 0.7151522, 0.0721750],
+        [0.0193339, 0.1191920, 0.9503041]
+    ])
+    xyz = np.dot(rgb, xyz_matrix.T)
+    
+    # XYZ -> Lab (D65)
+    xyz[:, :, 0] /= 0.95047
+    xyz[:, :, 1] /= 1.00000
+    xyz[:, :, 2] /= 1.08883
+    
+    mask = xyz > 0.008856
+    xyz[mask] = xyz[mask] ** (1/3)
+    xyz[~mask] = (7.787 * xyz[~mask]) + (16/116)
+    
+    L = (116 * xyz[:, :, 1]) - 16
+    a = 500 * (xyz[:, :, 0] - xyz[:, :, 1])
+    b = 200 * (xyz[:, :, 1] - xyz[:, :, 2])
+    
+    return np.stack([L, a, b], axis=2)
+
+def lab2rgb(lab):
+    # Lab -> XYZ
+    y = (lab[:, :, 0] + 16) / 116
+    x = lab[:, :, 1] / 500 + y
+    z = y - lab[:, :, 2] / 200
+    
+    xyz = np.stack([x, y, z], axis=2)
+    mask = xyz > 0.206893 # (6/29)
+    xyz[mask] = xyz[mask] ** 3
+    xyz[~mask] = (xyz[~mask] - 16/116) / 7.787
+    
+    xyz[:, :, 0] *= 0.95047
+    xyz[:, :, 1] *= 1.00000
+    xyz[:, :, 2] *= 1.08883
+    
+    # XYZ -> sRGB
+    rgb_matrix = np.array([
+        [ 3.2404542, -1.5371385, -0.4985314],
+        [-0.9692660,  1.8760108,  0.0415560],
+        [ 0.0556434, -0.2040259,  1.0572252]
+    ])
+    rgb = np.dot(xyz, rgb_matrix.T)
+    
+    mask = rgb > 0.0031308
+    rgb[mask] = 1.055 * (rgb[mask] ** (1/2.4)) - 0.055
+    rgb[~mask] = 12.92 * rgb[~mask]
+    
+    return np.clip(rgb, 0, 1)
 
 class Colorizer:
     def __init__(self, model_path="checkpoints/siggraph17.onnx"):
