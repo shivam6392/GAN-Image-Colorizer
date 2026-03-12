@@ -71,8 +71,17 @@ class Colorizer:
             sess_options = ort.SessionOptions()
             sess_options.intra_op_num_threads = 1
             sess_options.inter_op_num_threads = 1
+            
+            # Aggressive memory optimization for Render 512MB limit
+            sess_options.enable_mem_pattern = False
+            sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+            
             self.session = ort.InferenceSession(model_path, sess_options, providers=['CPUExecutionProvider'])
             self.input_name = self.session.get_inputs()[0].name
+            
+            # Explicitly clear memory after loading model
+            import gc
+            gc.collect()
         else:
             print(f"Warning: ONNX model {model_path} not found. Cannot colorize.")
             self.session = None
