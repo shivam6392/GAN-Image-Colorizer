@@ -1,7 +1,7 @@
 import os
 import requests
 
-onnx_url = "https://github.com/shivam6392/GAN-Image-Colorizer/releases/download/v1.0.0/siggraph17.onnx"
+onnx_url = "https://github.com/shivam6392/GAN-Image-Colorizer/releases/download/new_release/siggraph17.onnx"
 
 base_dir = os.path.dirname(__file__)
 onnx_path = os.path.join(base_dir, "checkpoints", "siggraph17.onnx")
