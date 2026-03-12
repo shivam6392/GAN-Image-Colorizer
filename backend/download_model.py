@@ -12,9 +12,12 @@ def download_file(url, save_path):
         return True
     
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    print(f"Downloading model from GitHub Release...")
+    print(f"Downloading model from: {url}")
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
     try:
-        response = requests.get(url, stream=True, timeout=30)
+        response = requests.get(url, stream=True, timeout=30, headers=headers)
         if response.status_code == 200:
             with open(save_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=1024*1024):

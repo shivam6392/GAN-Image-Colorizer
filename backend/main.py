@@ -36,6 +36,8 @@ colorizer = Colorizer(model_path=model_path)
 
 @app.get("/")
 @app.get("/health")
+@app.head("/")
+@app.head("/health")
 def read_root():
     return {"status": "healthy", "model_loaded": model_path is not None}
 
